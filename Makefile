@@ -5,7 +5,7 @@ all:
 	corebuild -pkg $(PKG) $(ADDITIONAL) src/main.native
 
 install:
-	scp main.native ubuntu@54.194.72.28:
+	scp main.native ubuntu@54.208.53.6:
 
 clean:
 	corebuild -clean
