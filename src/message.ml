@@ -106,7 +106,7 @@ module Server = struct
             { Reject.
               order_id = json |> member "order_id" |> to_int
             ; error = json |> member "error" |> to_string
-            } 
+            }
         | "trade" -> Trade
             { Trade.
               price = json |> member "price" |> to_int
@@ -154,7 +154,7 @@ module Client = struct
             ; price : Price.t
             ; size : Size.t
             } with sexp
-    end;; 
+    end;;
 
     module Convert = struct
         type t =
@@ -176,7 +176,7 @@ module Client = struct
         | Cancel of Cancel.t
         with sexp
 
-    let to_string = 
+    let to_string =
         let open Yojson.Basic in
         function
         | Hello name -> to_string

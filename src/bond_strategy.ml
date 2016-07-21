@@ -19,6 +19,18 @@ module Bond_strategy = struct
       ~size:100
 
   let react_fill controller order =
-    (* TODO: depending on whether it was buy or sell, put more buys or sells *)
-    ()
+    match order.dir with
+    | Direction.Sell ->
+      Controller.send_order controller
+        ~symbol:Symbol.BOND
+        ~dir:Direction.Buy
+        ~price:999
+        ~size:order.size
+    | Direction.Buy ->
+      Controller.send_order controller
+        ~symbol:Symbol.BOND
+        ~dir:Direction.Sell
+        ~price:1001
+        ~size:order.size
+
 end
