@@ -4,12 +4,6 @@ open Message;;
 
 type writer = string -> unit Deferred.t;;
 
-let connect ~f _socket reader writer =
-    Pipe.iter (Reader.lines reader)
-        ~f:(fun line -> f ~line ~write:(fun line -> Writer.write_line writer line; Writer.flushed writer))
-    >>= fun () -> raise End_of_file
-;;
-
 let loop ~host ~port ~f ~on_connect =
     let addr = Tcp.to_host_and_port host port in
     let rec loop () =

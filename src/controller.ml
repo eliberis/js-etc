@@ -20,7 +20,8 @@ module Controller = struct
     ()
 
   let handle_fill controller fill =
-    Bond_strategy.react_fill controller fill
+    let send_order = Controller.send_order controller in
+    Bond_strategy.react_fill ~send_order fill
 
   let handle_message controller message =
     match message with
