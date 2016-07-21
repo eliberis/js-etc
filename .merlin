@@ -1,0 +1,12 @@
+S .
+S network
+S message
+S logic
+S utils
+
+B _build/*
+
+PKG cohttp.async
+PKG core
+PKG async
+PKG yojson
