@@ -28,13 +28,22 @@ end
 module Symbol = struct
     module Inner = struct
         type t = BOND | VALBZ | VALE | GS | MS | WFC | XLF with sexp
+        let compare = Pervasives.compare
     end
 
     include Inner
     include Sexpable.To_stringable(Inner)
+    include Comparable.Make(Inner)
 end
 
 module Server = struct
+    module Hello = struct
+        type t =
+            { cash : int
+            ; symbols : int Symbol.Map.t
+            } with sexp
+    end
+
     module Reject = struct
         type t =
             { order_id : Order_id.t
@@ -83,7 +92,7 @@ module Server = struct
     end;;
 
     type t =
-        | Hello
+        | Hello of Hello.t
         | Error of string
         | Reject of Reject.t
         | Book of Book.t
@@ -101,6 +110,13 @@ module Server = struct
         let json = from_string str in
         match json |> member "type" |> to_string with
         | "hello" -> Hello
+            { Hello.
+              cash = json |> member "cash" |> to_int
+            ; symbols = json |> member "symbols" |> to_list |> List.fold ~init:Symbol.Map.empty ~f:(fun acc json ->
+                Symbol.Map.add acc
+                  ~key:(json |> member "symbol" |> to_string |> Symbol.of_string)
+                  ~data:(json |> member "position" |> to_int))
+            }
         | "error" -> Error (json |> member "error" |> to_string)
         | "reject" -> Reject
             { Reject.

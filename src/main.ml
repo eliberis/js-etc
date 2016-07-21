@@ -16,15 +16,14 @@ let () =
         )
         (fun host port team_name () ->
            printf "Hello from %s at %s:%d\n" team_name host port;
+           let controller = Controller.init () in
            Network.loop ~host ~port
                ~f:(fun ~line ~write:_ ->
                    print_endline line;
                    print_endline (Message.Server.of_string line |> Message.Server.sexp_of_t |> Sexp.to_string);
                    return ()
                )
-               ~on_connect:(fun write ->
-                   Controller.on_connect write;
-                   Message.Client.Hello team_name |> Message.Client.to_string |> write)
+               ~on_connect:(Controller.on_connect controller ~team_name)
         )
     in
     Command.run command;;
