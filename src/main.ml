@@ -1,3 +1,4 @@
+open Core.Std
 open Async.Std
 open Bot_state
 
@@ -16,7 +17,11 @@ let () =
         (fun host port team_name () ->
            printf "Hello from %s at %s:%d\n" team_name host port;
            Network.loop ~host ~port
-               ~f:(fun ~line ~write -> print_endline line |> return)
+               ~f:(fun ~line ~write ->
+                   print_endline line;
+                   print_endline (Message.of_string line |> Message.sexp_of_t |> Sexp.to_string);
+                   return ()
+               )
                ~on_connect:(fun write -> write "HELLO COULOMB")
         )
     in
