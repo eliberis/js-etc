@@ -1,6 +1,7 @@
 open Async.Std
 open Bot_state
 open Bond_strategy
+open Message
 
 module Controller = struct
   type t = { mutable state : Bot_state.t }
@@ -19,8 +20,12 @@ module Controller = struct
   let handle_close _controller _message =
     ()
 
+  let send_order _controller ~symbol:_ ~dir:_ ~price:_ ~size:_ =
+    (* TODO actually send order *)
+    return ()
+
   let handle_fill controller fill =
-    let send_order = Controller.send_order controller in
+    let send_order = send_order controller in
     Bond_strategy.react_fill ~send_order fill
 
   let handle_message controller message =
@@ -28,7 +33,4 @@ module Controller = struct
     | Server.Fill fill -> handle_fill controller fill
     | _ -> return ()
 
-  let send_order _controller ~symbol:_ ~dir:_ ~price:_ ~size:_ =
-    (* TODO actually send order *)
-    return ()
 end

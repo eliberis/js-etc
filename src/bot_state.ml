@@ -1,12 +1,11 @@
 open Async.Std
 open Positions
-open Order
-open Symbol
+open Message
 
 module Bot_state = struct
   type t = {
     positions : Positions.t;
-    orders : Order.t list;
+(*    orders : Order.t list; *)
   }
 
   let estimate_fair_value symbol =

@@ -18,7 +18,7 @@ module Bond_strategy = struct
       ~size:100
 
   let react_fill ~send_order fill =
-    match fill.dir with
+    match fill.Server.Fill.dir with
     | Direction.Sell ->
       send_order
         ~symbol:Symbol.BOND

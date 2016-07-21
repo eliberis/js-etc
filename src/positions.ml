@@ -1,6 +1,6 @@
 open Core.Std
 open Async.Std
-open Symbol
+open Message
 
 module Positions = struct
   type t = {
