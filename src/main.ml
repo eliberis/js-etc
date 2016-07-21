@@ -24,8 +24,8 @@ let () =
                             | Fill _ -> print_endline (Message.Server.sexp_of_t msg |> Sexp.to_string) |> return
                             | _ -> return ())
                         ; Bond_penny.run
-                        ; Predicted.penny ~symbol:VALBZ
-                        ; Predicted.penny ~symbol:VALE
+                        ; Predicted.penny ~symbol:VALBZ ~margin:1
+                        ; Predicted.penny ~symbol:VALE ~margin:1
                         ])
         )
     in
