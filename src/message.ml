@@ -13,16 +13,16 @@ module Size = struct
 end
 
 module Direction = struct
-    type t = [ `Buy | `Sell ] with sexp
+    type t = Buy | Sell with sexp
 
     let of_string = function
-        | "BUY" -> `Buy
-        | "SELL" -> `Sell
+        | "BUY" -> Buy
+        | "SELL" -> Sell
         | _ -> failwith "wrong direction"
 
     let to_string = function
-        | `Buy -> "BUY"
-        | `Sell -> "SELL"
+        | Buy -> "BUY"
+        | Sell -> "SELL"
 end
 
 module Symbol = struct
