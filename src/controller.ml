@@ -4,7 +4,10 @@ open Bond_strategy
 open Message
 
 module Controller = struct
-  type t = { mutable state : Bot_state.t }
+  type t = { mutable state : Bot_state.t;
+             writer : Network.writer;
+             mutable counter : int
+           }
 
   let on_connect =
     (* Write hello *)
@@ -20,9 +23,13 @@ module Controller = struct
   let handle_close _controller _message =
     ()
 
-  let send_order _controller ~symbol:_ ~dir:_ ~price:_ ~size:_ =
-    (* TODO actually send order *)
-    return ()
+  let send_order controller ~symbol ~dir ~price ~size =
+    let order = { Client.Add.
+                  order_id = controller.counter;
+                  symbol; dir; price; size }
+    in
+    controller.counter <- controller.counter + 1;
+    controller.writer (Client.to_string (Client.Add order))
 
   let handle_fill controller fill =
     let send_order = send_order controller in
