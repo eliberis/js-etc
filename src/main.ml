@@ -19,10 +19,10 @@ let () =
            Network.loop ~host ~port
                ~f:(fun ~line ~write ->
                    print_endline line;
-                   print_endline (Message.of_string line |> Message.sexp_of_t |> Sexp.to_string);
+                   print_endline (Message.Server.of_string line |> Message.Server.sexp_of_t |> Sexp.to_string);
                    return ()
                )
-               ~on_connect:(fun write -> write "HELLO COULOMB")
+               ~on_connect:(fun write -> Message.Client.Hello team_name |> Message.Client.to_string |> write)
         )
     in
     Command.run command;;
