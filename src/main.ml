@@ -1,4 +1,5 @@
-open Async.Std;;
+open Async.Std
+open Bot_state
 
 let () =
     let command = Command.async
