@@ -3,29 +3,18 @@ open Async.Std
 open Controller
 open Message
 
+let limit = 100;;
+
 let run controller = function
-    | Message.Server.Hello _ ->
-        Controller.add controller
-            ~symbol:Symbol.BOND
-            ~dir:Direction.Buy
-            ~price:999
-            ~size:10
-        >>= fun _ ->
-        Controller.add controller
-            ~symbol:Symbol.BOND
-            ~dir:Direction.Sell
-            ~price:1001
-            ~size:10
-        |> Deferred.ignore
-    | Message.Server.Fill _ ->
+    | Message.Server.Fill _ | Message.Server.Open | Message.Server.Hello _ ->
         let aux ~dir ~price =
-            let pos = Controller.position controller ~dir ~symbol:Symbol.BOND in
-            if pos < 10 then
+            let pos = Controller.position controller ~dir ~symbol:Symbol.BOND |> Int.abs in
+            if pos < limit then
                 Controller.add controller
                     ~symbol:Symbol.BOND
                     ~dir
                     ~price
-                    ~size:(10 - pos)
+                    ~size:(limit - pos)
                 |> Deferred.ignore
             else
                 return ()
@@ -35,3 +24,4 @@ let run controller = function
         aux ~dir:Direction.Sell ~price:1001
         |> Deferred.ignore
     | _ -> return ()
+;;

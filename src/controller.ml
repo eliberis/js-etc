@@ -38,11 +38,11 @@ let internal_callback controller = function
           assert (fill.symbol = add.symbol);
           assert (fill.size <= add.size);
           controller.orders <- Order_id.Map.add controller.orders ~key:fill.order_id ~data:(Add { add with size = add.size - fill.size });
-          let value = (match fill.dir with | Buy -> fill.size | Sell -> -fill.size) * fill.price in
+          let signed = (match fill.dir with | Buy -> fill.size | Sell -> -fill.size) in
 
-          controller.cash <- controller.cash - value;
+          controller.cash <- controller.cash - signed * fill.price;
           controller.positions <- Symbol.Map.change controller.positions fill.symbol
-            ~f:(fun x -> Option.value_map ~default:value ~f:(( + ) value) x |> Option.some);
+            ~f:(fun x -> Option.value_map ~default:signed ~f:(( + ) signed) x |> Option.some);
           return ()
       | Some (Convert convert) ->
           assert (fill.dir = convert.dir);
@@ -137,10 +137,32 @@ let book controller order_id =
 ;;
 
 let position controller ?dir ~symbol =
-  Order_id.Map.fold controller.orders ~init:0 ~f:(fun ~key:_ ~data acc ->
-    match data with
-    | Add add when (dir = None || Some add.dir = dir) && add.symbol = symbol ->
-        acc + add.size
-    | Convert _ -> acc (* TODO *)
-    | _ -> acc)
+  let init =
+    Symbol.Map.find controller.positions symbol
+    |> Option.value ~default:0
+  in
+  match dir with
+  | None -> init
+  | Some dir ->
+    Order_id.Map.fold controller.orders ~init ~f:(fun ~key:_ ~data acc ->
+      match data with
+      | Add add when add.dir = dir && add.symbol = symbol ->
+          acc + (match add.dir with | Buy -> 1 | Sell -> -1) * add.size
+      | Convert _ -> acc (* TODO *)
+      | _ -> acc)
+;;
+
+let last_trades controller ~symbol ~limit =
+  Symbol.Map.find controller.trades symbol
+  |> Option.value_map ~default:[] ~f:(fun l -> List.take l limit)
+;;
+
+let trading_range controller ~symbol =
+  let open Option in
+  Symbol.Map.find controller.books symbol
+  >>= fun book -> 
+  let buy_max = List.fold book.buy ~init:Int.min_value ~f:(fun acc entry -> Int.max acc entry.price)
+  and sell_min = List.fold book.sell ~init:Int.max_value ~f:(fun acc entry -> Int.min acc entry.price)
+  in
+  return (buy_max, sell_min)
 ;;

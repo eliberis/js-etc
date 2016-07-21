@@ -3,6 +3,7 @@ open! Async.Std
 open Message
 
 module Book = Server.Book;;
+module Trade = Server.Trade;;
 
 type t
 type callback = t -> Message.Server.t -> unit Deferred.t
@@ -44,3 +45,14 @@ val position
   -> ?dir:Direction.t
   -> symbol:Symbol.t
   -> int
+
+val last_trades
+   : t
+  -> symbol:Symbol.t
+  -> limit:int
+  -> Trade.t list
+
+val trading_range
+  : t
+ -> symbol:Symbol.t
+ -> (int * int) Option.t
