@@ -4,6 +4,10 @@ open Bot_state
 module Controller = struct
   type t = { mutable state : Bot_state.t }
 
+  let on_connect controller =
+    (* Write hello *)
+    ()
+
   let handle_hello controller message =
     (* Pattern match on Hello and update positions *)
     ()
