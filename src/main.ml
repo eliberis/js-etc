@@ -1,6 +1,7 @@
 open Core.Std
 open Async.Std
 open Bot_state
+open Controller
 
 let () =
     let command = Command.async
@@ -17,12 +18,14 @@ let () =
         (fun host port team_name () ->
            printf "Hello from %s at %s:%d\n" team_name host port;
            Network.loop ~host ~port
-               ~f:(fun ~line ~write ->
+               ~f:(fun ~line ~write:_ ->
                    print_endline line;
                    print_endline (Message.Server.of_string line |> Message.Server.sexp_of_t |> Sexp.to_string);
                    return ()
                )
-               ~on_connect:(fun write -> Message.Client.Hello team_name |> Message.Client.to_string |> write)
+               ~on_connect:(fun write ->
+                   Controller.on_connect;
+                   Message.Client.Hello team_name |> Message.Client.to_string |> write)
         )
     in
     Command.run command;;
