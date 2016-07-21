@@ -15,15 +15,16 @@ let () =
                 ~doc:"Team name"
         )
         (fun host port team_name () ->
-           printf "Hello from %s at %s:%d\n" team_name host port;
-           let controller = Controller.init () in
-           Network.loop ~host ~port
-               ~f:(fun ~line ~write:_ ->
-                   print_endline line;
-                   print_endline (Message.Server.of_string line |> Message.Server.sexp_of_t |> Sexp.to_string);
-                   return ()
-               )
-               ~on_connect:(Controller.on_connect controller ~team_name)
+            let addr = Tcp.to_host_and_port host port in
+            Tcp.with_connection addr (fun _socket reader writer ->
+                Controller.run ~reader ~writer ~team_name
+                    ~callbacks:
+                        [ (fun _controller msg ->
+                            match msg with
+                            | Fill _ -> print_endline (Message.Server.sexp_of_t msg |> Sexp.to_string) |> return
+                            | _ -> return ())
+                        ; Bond_penny.run
+                        ])
         )
     in
     Command.run command;;

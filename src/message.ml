@@ -1,16 +1,10 @@
 open Core.Std;;
 
-module Order_id = struct
-    type t = int with sexp
-end
+module Order_id = Int
 
-module Price = struct
-    type t = int with sexp
-end
+module Price = Int
 
-module Size = struct
-    type t = int with sexp
-end
+module Size = Int
 
 module Direction = struct
     type t = Buy | Sell with sexp
@@ -80,6 +74,7 @@ module Server = struct
             ; symbol : Symbol.t
             ; dir : Direction.t
             ; size : Size.t
+            ; price : Size.t
             } with sexp
     end;;
 
@@ -152,6 +147,7 @@ module Server = struct
             ; symbol = json |> member "symbol" |> to_string |> Symbol.of_string
             ; dir = json |> member "dir" |> to_string |> Direction.of_string
             ; size = json |> member "size" |> to_int
+            ; price = json |> member "price" |> to_int
             }
         | "out" -> Out (json |> member "order_id" |> to_int)
         | msg -> failwith ("illegal message type: " ^ msg)
