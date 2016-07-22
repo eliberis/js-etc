@@ -21,12 +21,18 @@ type t =
 
 type callback = t -> Message.Server.t -> unit Deferred.t
 
-let conversion_rate = 100
+let conversion_rate = function
+  | _ -> 100
 ;;
 
 let _basket sym =
   match (sym : Symbol.t) with
   | x -> (1, [(x, 1)]) (* TODO: add proper baskets *)
+
+let change_position controller ~symbol ~amount =
+  controller.positions <- Symbol.Map.change controller.positions symbol
+            ~f:(fun x -> Option.value_map ~default:amount ~f:(( + ) amount) x |> Option.some)
+;;
 
 let internal_callback controller = function
   | Message.Server.Book book ->
@@ -47,26 +53,31 @@ let internal_callback controller = function
           controller.orders <- Order_id.Map.add controller.orders
               ~key:fill.order_id ~data:(Add { add with size = add.size - fill.size });
           let signed = (match fill.dir with | Buy -> fill.size | Sell -> -fill.size) in
-
           controller.cash <- controller.cash - signed * fill.price;
+          change_position controller ~symbol:fill.symbol ~amount:signed;
           controller.positions <- Symbol.Map.change controller.positions fill.symbol
             ~f:(fun x -> Option.value_map ~default:signed ~f:(( + ) signed) x |> Option.some);
           return ()
-      | Some (Convert convert) ->
-          assert (fill.dir = convert.dir);
-          assert (fill.symbol = convert.symbol);
-          assert (fill.size <= convert.size);
-          controller.orders <- Order_id.Map.add controller.orders
-              ~key:fill.order_id ~data:(Convert { convert with size = convert.size - fill.size });
-          (* TODO *)
-          controller.cash <- controller.cash - conversion_rate;
-          (*controller.positions <- Symbol.Map.change controller.positions fill.symbol
-              ~f:(fun x -> )*)
-          return ()
+      | Some (Convert _) ->
+          assert false;
       end
-  | Message.Server.Out order_id ->
+  | Message.Server.Out order_id
       controller.orders <- Order_id.Map.remove controller.orders order_id;
       return ()
+  | Message.Server.Ack order_id ->
+      match Order_id.Map.find controller.orders order_id with
+      | None -> return ()
+      | Some (Convert convert) ->
+          controller.orders <- Order_id.Map.remove controller.orders order_id;
+          controller.cash <- controller.cash - conversion_rate (convert.symbol)
+          let etfval, subvals = Symbol.basket convert.symbol |> Option.value_exn in
+          let mult = match convert.dir with | Buy -> convert.size / etfval | Sell -> - convert.size / etfval in
+          change_position controller ~symbol:convert.symbol ~amount:convert.size;
+          List.iter subvals ~f:(fun (symbol, amount) -> change_position controller ~symbol ~amount:(-amount / mult));
+          controller.positions <- List.iter subvals ~init:(Symbol.Map.change 
+          controller.positions <- 
+          return ()
+      | Some (Ack _) -> assert false
   | Message.Server.Trade trade ->
       controller.trades <- Symbol.Map.change controller.trades trade.symbol
         ~f:(Option.value_map ~default:(Some [trade]) ~f:(fun trades -> Some (trade :: trades)));
