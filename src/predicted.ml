@@ -47,7 +47,7 @@ let fair controller ~symbol =
 ;;
 
 let penny ~symbol ?(margin=1) controller = function
-    | Message.Server.Fill _ | Message.Server.Open | Message.Server.Hello _ ->
+  | Message.Server.Fill _ | Message.Server.Open | Message.Server.Hello _ | Message.Server.Trade _ ->
         let aux ~dir ~price =
           let pos = Controller.position controller ~dir ~symbol in
           let plimit = limit symbol in
