@@ -22,7 +22,7 @@ let initial_price sym =
 let fair controller ~symbol =
     let aux symbol =
         let cmp x y = Price.compare (x.Controller.Trade.price) (y.Controller.Trade.price) in
-        let trades = Controller.last_trades controller ~symbol ~limit:100 in
+        let trades = Controller.last_trades controller ~symbol ~limit:50 in
         let trades = List.sort ~cmp trades in
         match trades with
         | trades when List.length trades > 5 ->
