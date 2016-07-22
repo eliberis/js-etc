@@ -67,9 +67,9 @@ let penny ~symbol ?(margin=1) controller = function
                 ~symbol
                 ~dir
                 ~price
-                ~size:(min size 4)
+                ~size:(min size 2)
             >>= fun order_id ->
-            upon (Clock.after (sec 1.0)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
+            upon (Clock.after (sec 2.0)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
             return ()
           else begin
             printf !"Did not send order because of position %d limit %d" pos (limit symbol);
