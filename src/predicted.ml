@@ -20,30 +20,39 @@ let initial_price sym =
   | _ -> assert false
 
 let fair controller ~symbol =
+  let trade_history_price symbol =
+    let cmp x y = Price.compare (x.Controller.Trade.price) (y.Controller.Trade.price) in
+    let trades = Controller.last_trades controller ~symbol ~limit:8 in
+    let trades = List.sort ~cmp trades in
+    match trades with
+    | trades when List.length trades >= 4 ->
+      let len = List.length trades in
+      let trades = List.(take (drop trades (len / 4)) (2 * len / 4)) in
+      let sum, cnt = List.fold trades ~init:(0, 0) ~f:(fun (sum, cnt) trade ->
+          (sum + trade.Controller.Trade.price * trade.size, cnt + trade.size))
+      in
+      Some (sum / cnt)
+    | _ -> None
+  in
+  let book_price symbol =
+    match Controller.trading_range controller ~symbol with
+    | None -> None
+    | Some (best_bid, best_offer) -> Some ((best_bid + best_offer) / 2)
+  in
+  let initial_const_price symbol = initial_price symbol
+  in
   let aux symbol =
-        let cmp x y = Price.compare (x.Controller.Trade.price) (y.Controller.Trade.price) in
-        let trades = Controller.last_trades controller ~symbol ~limit:8 in
-        let trades = List.sort ~cmp trades in
-        match trades with
-        | trades when List.length trades >= 4 ->
-            let len = List.length trades in
-            let trades = List.(take (drop trades (len / 4)) (2 * len / 4)) in
-            let sum, cnt = List.fold trades ~init:(0, 0) ~f:(fun (sum, cnt) trade ->
-                (sum + trade.Controller.Trade.price * trade.size, cnt + trade.size))
-            in
-            let fair = sum / cnt in
-            begin
-            match Controller.trading_range controller ~symbol with
-            | None -> fair
-            | Some (best_bid, best_offer) -> (0 * (sum / cnt) + 5 * (best_bid + best_offer)) / 10
-            end
-        | _ -> initial_price symbol
-    in
-    match (Symbol.basket symbol) with
-    | Some (etf, consts) ->
-      List.fold consts ~init:0 ~f:(fun price_so_far (sym, share) ->
-          price_so_far + share * (aux sym) ) / etf
-    | None -> aux symbol
+    match book_price symbol with
+    | Some p -> p
+    | None -> match trade_history_price symbol with
+      | Some p -> p
+      | None -> initial_const_price symbol
+  in
+  match (Symbol.basket symbol) with
+  | Some (etf, consts) ->
+    List.fold consts ~init:0 ~f:(fun price_so_far (sym, share) ->
+        price_so_far + share * (aux sym) ) / etf
+  | None -> aux symbol
 ;;
 
 let penny ~symbol ?(margin=1) controller = function
@@ -74,7 +83,7 @@ let penny ~symbol ?(margin=1) controller = function
             >>= fun _ ->
             aux ~dir:Direction.Sell ~price:((1 * fair + 9 * max) / 10)
             |> Deferred.ignore
-        | (fair, Some (min, max)) -> 
+        | (fair, Some (min, max)) ->
             printf "fair outside range: %d not in [%d, %d]\n" fair min max;
             return ()
         | _ ->
