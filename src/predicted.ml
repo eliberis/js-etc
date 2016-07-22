@@ -50,7 +50,7 @@ let penny ~symbol ?(margin=1) controller = function
                     ~symbol
                     ~dir
                     ~price
-                    ~size:(limit symbol - pos)
+                    ~size:(min (limit symbol - pos) 25)
                 >>= fun order_id ->
                 after (sec 2.)
                 >>= fun () ->
