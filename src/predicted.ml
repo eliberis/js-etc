@@ -77,12 +77,14 @@ let penny ~symbol ?(margin=1) controller = function
           end
         in
         begin
+        let position = Controller.position controller ~symbol ?dir:None in
+        let spread_threshold = 20 in
         match fair controller ~symbol, Controller.trading_range controller ~symbol with
-        | (fair, Some (min, max)) when min <= fair && fair <= max && max - min > 20 ->
+        | (fair, Some (min, max)) when min <= fair && fair <= max && max - min > 0 ->
             printf "fair: %d, %d %d: %d\n" fair min max margin;
-            aux ~dir:Direction.Buy ~price:(min + 1)
+            (if position < 0 || max - min > spread_threshold then aux ~dir:Direction.Buy ~price:(min + 1) else return ())
             >>= fun _ ->
-            aux ~dir:Direction.Sell ~price:(max - 1)
+            (if position > 0 || max - min > spread_threshold then aux ~dir:Direction.Sell ~price:(max - 1) else return ())
             |> Deferred.ignore
         | (fair, Some (min, max)) ->
             printf "fair outside range: %d not in [%d, %d]\n" fair min max;
