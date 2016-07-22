@@ -35,7 +35,7 @@ let fair controller ~symbol =
             begin
             match Controller.trading_range controller ~symbol with
             | None -> fair
-            | Some (best_bid, best_offer) -> (2 * (sum / cnt) + 4 * (best_bid + best_offer)) / 10
+            | Some (best_bid, best_offer) -> (0 * (sum / cnt) + 5 * (best_bid + best_offer)) / 10
             end
         | _ -> initial_price symbol
     in
