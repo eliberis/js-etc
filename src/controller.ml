@@ -25,10 +25,6 @@ let conversion_rate = function
   | _ -> 100
 ;;
 
-let _basket sym =
-  match (sym : Symbol.t) with
-  | x -> (1, [(x, 1)]) (* TODO: add proper baskets *)
-
 let change_position controller ~symbol ~amount =
   controller.positions <- Symbol.Map.change controller.positions symbol
             ~f:(fun x -> Option.value_map ~default:amount ~f:(( + ) amount) x |> Option.some)
@@ -55,29 +51,27 @@ let internal_callback controller = function
           let signed = (match fill.dir with | Buy -> fill.size | Sell -> -fill.size) in
           controller.cash <- controller.cash - signed * fill.price;
           change_position controller ~symbol:fill.symbol ~amount:signed;
-          controller.positions <- Symbol.Map.change controller.positions fill.symbol
-            ~f:(fun x -> Option.value_map ~default:signed ~f:(( + ) signed) x |> Option.some);
           return ()
       | Some (Convert _) ->
-          assert false;
+          assert false
       end
-  | Message.Server.Out order_id
+  | Message.Server.Out order_id ->
       controller.orders <- Order_id.Map.remove controller.orders order_id;
       return ()
   | Message.Server.Ack order_id ->
+      begin
       match Order_id.Map.find controller.orders order_id with
       | None -> return ()
       | Some (Convert convert) ->
           controller.orders <- Order_id.Map.remove controller.orders order_id;
-          controller.cash <- controller.cash - conversion_rate (convert.symbol)
+          controller.cash <- controller.cash - conversion_rate (convert.symbol);
           let etfval, subvals = Symbol.basket convert.symbol |> Option.value_exn in
           let mult = match convert.dir with | Buy -> convert.size / etfval | Sell -> - convert.size / etfval in
           change_position controller ~symbol:convert.symbol ~amount:convert.size;
           List.iter subvals ~f:(fun (symbol, amount) -> change_position controller ~symbol ~amount:(-amount / mult));
-          controller.positions <- List.iter subvals ~init:(Symbol.Map.change 
-          controller.positions <- 
           return ()
-      | Some (Ack _) -> assert false
+      | Some (Add _) -> return ()
+      end
   | Message.Server.Trade trade ->
       controller.trades <- Symbol.Map.change controller.trades trade.symbol
         ~f:(Option.value_map ~default:(Some [trade]) ~f:(fun trades -> Some (trade :: trades)));
@@ -129,6 +123,7 @@ let add controller ~symbol ~dir ~price ~size =
     ; size
     }
   in
+  printf "Sending order: %s\n" (Message.Client.to_string (Message.Client.Add order));
   controller.orders <- Order_id.Map.add controller.orders ~key:order_id ~data:(Order.Add order);
   controller.writer (Message.Client.Add order)
   >>| fun () ->
@@ -152,7 +147,10 @@ let convert controller ~symbol ~dir ~size =
 ;;
 
 let cancel controller order_id =
-  controller.writer (Message.Client.Cancel order_id)
+  if Order_id.Map.mem controller.orders order_id then
+    controller.writer (Message.Client.Cancel order_id)
+  else
+    return ()
 ;;
 
 let book controller order_id =

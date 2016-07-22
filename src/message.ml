@@ -30,6 +30,16 @@ module Symbol = struct
     include Inner
     include Sexpable.To_stringable(Inner)
     include Comparable.Make(Inner)
+
+    let basket = function
+      | XLY -> Some (20, [(AMZN, 6); (HD, 6); (DIS, 8)])
+      | XLP -> Some (20, [(PG, 12); (KO, 12); (PM, 6)])
+      | XLU -> Some (20, [(NEE, 8); (DUK, 6); (SO, 8)])
+      | RSP -> Some (20, [(AMZN, 3); (HD, 6); (DIS, 8);
+                          (PG, 6); (KO, 12); (PM, 6);
+                          (NEE, 4); (DUK, 6); (SO, 8)])
+      | _ -> None
+
 end
 
 module Server = struct
