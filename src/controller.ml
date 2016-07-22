@@ -185,5 +185,5 @@ let trading_range controller ~symbol =
   let buy_max = List.fold book.buy ~init:Int.min_value ~f:(fun acc entry -> Int.max acc entry.price)
   and sell_min = List.fold book.sell ~init:Int.max_value ~f:(fun acc entry -> Int.min acc entry.price)
   in
-  return (buy_max, sell_min)
+  Option.some_if (buy_max > Int.min_value && sell_min < Int.max_value) (buy_max, sell_min)
 ;;
