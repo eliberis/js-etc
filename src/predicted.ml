@@ -47,7 +47,7 @@ let fair controller ~symbol =
 ;;
 
 let penny ~symbol ?(margin=1) controller = function
-    | Message.Server.Fill _ | Message.Server.Open | Message.Server.Hello _ | Message.Server.Book _ ->
+    | Message.Server.Fill _ | Message.Server.Open | Message.Server.Hello _ ->
         let aux ~dir ~price =
           let pos = Controller.position controller ~dir ~symbol in
           let plimit = limit symbol in
@@ -57,7 +57,7 @@ let penny ~symbol ?(margin=1) controller = function
                 ~symbol
                 ~dir
                 ~price
-                ~size:(min size 10)
+                ~size:(min size 4)
             >>= fun order_id ->
             upon (Clock.after (sec 1.0)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
             return ()
