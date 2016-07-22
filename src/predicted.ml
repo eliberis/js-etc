@@ -61,7 +61,7 @@ let penny ~symbol ?(margin=1) controller = function
         begin
         match fair controller ~symbol, Controller.trading_range controller ~symbol with
         | (fair, Some (min, max)) when min <= fair - margin && fair + margin <= max ->
-            printf "%d %d\n" min max;
+            printf "fair: %d, %d %d\n" fair min max;
             aux ~dir:Direction.Buy ~price:(fair - margin)
             >>= fun _ ->
             aux ~dir:Direction.Sell ~price:(fair + margin)
