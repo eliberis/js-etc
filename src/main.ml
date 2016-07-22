@@ -1,6 +1,7 @@
 open Core.Std
 open Async.Std
 open Controller
+open Message
 
 let () =
     let command = Command.async
@@ -23,9 +24,7 @@ let () =
                             match msg with
                             | Fill _ -> print_endline (Message.Server.sexp_of_t msg |> Sexp.to_string) |> return
                             | _ -> return ())
-                        ; Bond_penny.run
-                        ; Predicted.penny ~symbol:VALBZ ~margin:1
-                        ; Predicted.penny ~symbol:VALE ~margin:1
+                        ; Predicted.penny ~symbol:Symbol.AMZN ~margin:1
                         ])
         )
     in

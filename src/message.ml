@@ -21,7 +21,9 @@ end
 
 module Symbol = struct
     module Inner = struct
-        type t = BOND | VALBZ | VALE | GS | MS | WFC | XLF with sexp
+      type t = XLY | XLP | XLU | RSP
+             | AMZN | HD | DIS | PG | KO
+             | PM | NEE | DUK | SO with sexp
         let compare = Pervasives.compare
     end
 

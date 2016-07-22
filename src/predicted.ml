@@ -3,14 +3,13 @@ open Async.Std
 open Message
 
 let limit = function
-    | Symbol.VALE | VALBZ -> 10
     | _ -> 100
 ;;
 
 let fair controller ~symbol =
-    let aux symbol = 
+    let aux symbol =
         let cmp x y = Price.compare (x.Controller.Trade.price) (y.Controller.Trade.price) in
-        let trades = Controller.last_trades controller ~symbol ~limit:8000 in
+        let trades = Controller.last_trades controller ~symbol ~limit:100 in
         let trades = List.sort ~cmp trades in
         match trades with
         | trades when List.length trades > 5 ->
@@ -23,8 +22,6 @@ let fair controller ~symbol =
         | _ -> None
     in
     match symbol with
-    | Symbol.BOND -> Some 1000
-    (*| VALE -> aux Symbol.VALBZ*)
     | symbol -> aux symbol
 ;;
 
