@@ -52,7 +52,7 @@ let penny ~symbol ?(margin=1) controller = function
                 ~symbol
                 ~dir
                 ~price
-                ~size:(min size 25)
+                ~size:(min size 10)
             >>= fun order_id ->
             upon (Clock.after (sec 1.0)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
             return ()
