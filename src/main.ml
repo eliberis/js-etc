@@ -24,8 +24,8 @@ let () =
                             match msg with
                             | Fill _ -> print_endline (Message.Server.sexp_of_t msg |> Sexp.to_string) |> return
                             | _ -> return ())
-                        ; Predicted.penny ~symbol:Symbol.AMZN ~margin:1
-                        (*; Predicted.penny ~symbol:Symbol.DIS ~margin:1
+                        (*; Predicted.penny ~symbol:Symbol.AMZN ~margin:1
+                        ; Predicted.penny ~symbol:Symbol.DIS ~margin:1
                         ; Predicted.penny ~symbol:Symbol.DUK ~margin:1
                         ; Predicted.penny ~symbol:Symbol.HD ~margin:1
                         ; Predicted.penny ~symbol:Symbol.KO ~margin:1
@@ -33,9 +33,9 @@ let () =
                         ; Predicted.penny ~symbol:Symbol.PG ~margin:1
                         ; Predicted.penny ~symbol:Symbol.PM ~margin:1
                         ; Predicted.penny ~symbol:Symbol.RSP ~margin:1
-                        ; Predicted.penny ~symbol:Symbol.SO ~margin:1
+                        ; Predicted.penny ~symbol:Symbol.SO ~margin:1 *)
                         ; Predicted.penny ~symbol:Symbol.XLP ~margin:1
-                        ; Predicted.penny ~symbol:Symbol.XLU ~margin:1
+                        (*; Predicted.penny ~symbol:Symbol.XLU ~margin:1
                         ; Predicted.penny ~symbol:Symbol.XLY ~margin:1*)
                         ])
         )
