@@ -3,7 +3,7 @@ open Async.Std
 open Message
 
 let limit = function
-    | _ -> 10
+    | _ -> 100
 ;;
 
 let initial_price sym =
@@ -52,9 +52,8 @@ let penny ~symbol ?(margin=1) controller = function
                     ~price
                     ~size:(limit symbol - pos)
                 >>= fun order_id ->
-                after (sec 2.)
-                >>= fun () ->
-                Controller.cancel controller order_id
+                  upon (Clock.after (sec 2.)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
+                  return ()
             else
                 return ()
         in
