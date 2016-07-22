@@ -54,7 +54,7 @@ let penny ~symbol ?(margin=1) controller = function
                 ~price
                 ~size:(min size 25)
             >>= fun order_id ->
-            upon (Clock.after (sec 2.)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
+            upon (Clock.after (sec 1.0)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
             return ()
           else begin
             printf !"Did not send order because of position %d limit %d" pos (limit symbol);
@@ -63,7 +63,7 @@ let penny ~symbol ?(margin=1) controller = function
         in
         begin
         match fair controller ~symbol, Controller.trading_range controller ~symbol with
-        | (fair, Some (min, max)) when min <= fair - margin && fair + margin <= max ->
+        | (fair, Some (min, max)) (*when min <= fair - margin && fair + margin <= max*) ->
             printf "fair: %d, %d %d\n" fair min max;
             aux ~dir:Direction.Buy ~price:(fair - margin)
             >>= fun _ ->
