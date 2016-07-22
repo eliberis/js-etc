@@ -24,10 +24,6 @@ type callback = t -> Message.Server.t -> unit Deferred.t
 let conversion_rate = 100
 ;;
 
-let _basket sym =
-  match (sym : Symbol.t) with
-  | x -> (1, [(x, 1)]) (* TODO: add proper baskets *)
-
 let internal_callback controller = function
   | Message.Server.Book book ->
       controller.books <- Symbol.Map.add controller.books ~key:book.symbol ~data:book;

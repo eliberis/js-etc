@@ -6,6 +6,19 @@ let limit = function
     | _ -> 100
 ;;
 
+let initial_price sym =
+  match (sym : Symbol.t) with
+  | AMZN -> 24000
+  | HD -> 11800
+  | DIS -> 9400
+  | PG -> 7500
+  | KO -> 4100
+  | PM -> 8500
+  | NEE -> 10500
+  | DUK -> 7200
+  | SO -> 4700
+  | _ -> assert false
+
 let fair controller ~symbol =
     let aux symbol =
         let cmp x y = Price.compare (x.Controller.Trade.price) (y.Controller.Trade.price) in
@@ -18,11 +31,14 @@ let fair controller ~symbol =
             let sum, cnt = List.fold trades ~init:(0, 0) ~f:(fun (sum, cnt) trade ->
                 (sum + trade.Controller.Trade.price * trade.size, cnt + trade.size))
             in
-            Some (sum / cnt)
-        | _ -> None
+            sum / cnt
+        | _ -> initial_price symbol
     in
-    match symbol with
-    | symbol -> aux symbol
+    match (Symbol.basket symbol) with
+    | Some (etf, consts) ->
+      List.fold consts ~init:0 ~f:(fun price_so_far (sym, share) ->
+          price_so_far + share * (aux sym) ) / etf
+    | None -> aux symbol
 ;;
 
 let penny ~symbol ?(margin=1) controller = function
@@ -41,7 +57,7 @@ let penny ~symbol ?(margin=1) controller = function
         in
         begin
         match fair controller ~symbol, Controller.trading_range controller ~symbol with
-        | (Some fair, Some (min, max)) when min <= fair - margin && fair + margin <= max ->
+        | (fair, Some (min, max)) when min <= fair - margin && fair + margin <= max ->
             printf "%d %d\n" min max;
             aux ~dir:Direction.Buy ~price:(fair - margin)
             >>= fun _ ->
