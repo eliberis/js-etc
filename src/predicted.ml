@@ -3,7 +3,7 @@ open Async.Std
 open Message
 
 let limit = function
-    | _ -> 5
+    | _ -> 10
 ;;
 
 let initial_price sym =
@@ -78,7 +78,7 @@ let penny ~symbol ?(margin=1) controller = function
         in
         begin
         let position = Controller.position controller ~symbol ?dir:None in
-        let spread_threshold = 20 in
+        let spread_threshold = 10 in
         match fair controller ~symbol, Controller.trading_range controller ~symbol with
         | (fair, Some (min, max)) when min <= fair && fair <= max && max - min > 0 ->
             printf "fair: %d, %d %d: %d\n" fair min max margin;

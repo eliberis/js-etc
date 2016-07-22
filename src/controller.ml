@@ -51,7 +51,6 @@ let internal_callback controller = function
           let signed = (match fill.dir with | Buy -> fill.size | Sell -> -fill.size) in
           controller.cash <- controller.cash - signed * fill.price;
           change_position controller ~symbol:fill.symbol ~amount:signed;
-          printf "                        Now having: %d USD\n" controller.cash;
           return ()
       | Some (Convert _) ->
           assert false
