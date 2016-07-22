@@ -44,20 +44,22 @@ let fair controller ~symbol =
 let penny ~symbol ?(margin=1) controller = function
     | Message.Server.Fill _ | Message.Server.Open | Message.Server.Hello _ | Message.Server.Book _ ->
         let aux ~dir ~price =
-            let pos = Controller.position controller ~dir ~symbol |> Int.abs in
-            if pos < limit symbol then
-                Controller.add controller
-                    ~symbol
-                    ~dir
-                    ~price
-                    ~size:(min (limit symbol - pos) 25)
-                >>= fun order_id ->
-                upon (Clock.after (sec 2.)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
-                return ()
-            else begin
-              printf !"Did not send order because of position %d limit %d" pos (limit symbol);
-              return ()
-            end
+          let pos = Controller.position controller ~dir ~symbol in
+          let plimit = limit symbol in
+          let size = match dir with | Buy -> plimit - pos | Sell -> pos + plimit in
+          if size > 0 then
+            Controller.add controller
+                ~symbol
+                ~dir
+                ~price
+                ~size:(min size 25)
+            >>= fun order_id ->
+            upon (Clock.after (sec 2.)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
+            return ()
+          else begin
+            printf !"Did not send order because of position %d limit %d" pos (limit symbol);
+            return ()
+          end
         in
         begin
         match fair controller ~symbol, Controller.trading_range controller ~symbol with
