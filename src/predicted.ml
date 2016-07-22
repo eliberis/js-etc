@@ -50,12 +50,14 @@ let penny ~symbol ?(margin=1) controller = function
                     ~symbol
                     ~dir
                     ~price
-                    ~size:(limit symbol - pos)
+                    ~size:(min (limit symbol - pos) 25)
                 >>= fun order_id ->
-                  upon (Clock.after (sec 2.)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
-                  return ()
-            else
+                upon (Clock.after (sec 2.)) (fun () -> Controller.cancel controller order_id |> don't_wait_for);
                 return ()
+            else begin
+              printf !"Did not send order because of position %d limit %d" pos (limit symbol);
+              return ()
+            end
         in
         begin
         match fair controller ~symbol, Controller.trading_range controller ~symbol with
