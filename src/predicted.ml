@@ -74,7 +74,12 @@ let penny ~symbol ?(margin=1) controller = function
             >>= fun _ ->
             aux ~dir:Direction.Sell ~price:((1 * fair + 9 * max) / 10)
             |> Deferred.ignore
-        | _ -> return ()
+        | (fair, Some (min, max)) -> 
+            printf "fair outside range: %d not in [%d, %d]\n" fair min max;
+            return ()
+        | _ ->
+            printf "Some other weird case\n";
+            return ()
         end
     | _ -> return ()
 ;;
