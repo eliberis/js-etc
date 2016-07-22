@@ -31,7 +31,12 @@ let fair controller ~symbol =
             let sum, cnt = List.fold trades ~init:(0, 0) ~f:(fun (sum, cnt) trade ->
                 (sum + trade.Controller.Trade.price * trade.size, cnt + trade.size))
             in
-            sum / cnt
+            let fair = sum / cnt in
+            begin
+            match Controller.trading_range controller ~symbol with
+            | None -> fair
+            | Some (best_bid, best_offer) -> (4 * (sum / cnt) + 3 * (best_bid + best_offer)) / 10
+            end
         | _ -> initial_price symbol
     in
     match (Symbol.basket symbol) with
