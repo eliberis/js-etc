@@ -55,8 +55,10 @@ let penny ~symbol ?(margin=1) controller = function
                 after (sec 2.)
                 >>= fun () ->
                 Controller.cancel controller order_id
-            else
-                return ()
+            else begin
+              printf !"Did not send order because of position %d limit %d" pos (limit symbol);
+              return ()
+            end
         in
         begin
         match fair controller ~symbol, Controller.trading_range controller ~symbol with
