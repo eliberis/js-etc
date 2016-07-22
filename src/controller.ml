@@ -51,6 +51,7 @@ let internal_callback controller = function
           let signed = (match fill.dir with | Buy -> fill.size | Sell -> -fill.size) in
           controller.cash <- controller.cash - signed * fill.price;
           change_position controller ~symbol:fill.symbol ~amount:signed;
+          printf "                        Now having: %d USD\n" controller.cash;
           return ()
       | Some (Convert _) ->
           assert false
@@ -67,8 +68,8 @@ let internal_callback controller = function
           controller.cash <- controller.cash - conversion_rate (convert.symbol);
           let etfval, subvals = Symbol.basket convert.symbol |> Option.value_exn in
           let mult = match convert.dir with | Buy -> convert.size / etfval | Sell -> - convert.size / etfval in
-          change_position controller ~symbol:convert.symbol ~amount:convert.size;
-          List.iter subvals ~f:(fun (symbol, amount) -> change_position controller ~symbol ~amount:(-amount / mult));
+          change_position controller ~symbol:convert.symbol ~amount:(etfval * mult);
+          List.iter subvals ~f:(fun (symbol, amount) -> change_position controller ~symbol ~amount:(-amount * mult));
           return ()
       | Some (Add _) -> return ()
       end
