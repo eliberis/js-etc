@@ -21,6 +21,7 @@ let initial_price sym =
 
 let fair controller ~symbol =
   let trade_history_price symbol =
+    printf "Trade history price requested";
     let cmp x y = Price.compare (x.Controller.Trade.price) (y.Controller.Trade.price) in
     let trades = Controller.last_trades controller ~symbol ~limit:8 in
     let trades = List.sort ~cmp trades in
