@@ -22,12 +22,12 @@ let initial_price sym =
 let fair controller ~symbol =
   let aux symbol =
         let cmp x y = Price.compare (x.Controller.Trade.price) (y.Controller.Trade.price) in
-        let trades = Controller.last_trades controller ~symbol ~limit:50 in
+        let trades = Controller.last_trades controller ~symbol ~limit:8 in
         let trades = List.sort ~cmp trades in
         match trades with
-        | trades when List.length trades > 5 ->
+        | trades when List.length trades >= 4 ->
             let len = List.length trades in
-            let trades = List.(take (drop trades (len / 4)) (3 * len / 4)) in
+            let trades = List.(take (drop trades (len / 4)) (2 * len / 4)) in
             let sum, cnt = List.fold trades ~init:(0, 0) ~f:(fun (sum, cnt) trade ->
                 (sum + trade.Controller.Trade.price * trade.size, cnt + trade.size))
             in
