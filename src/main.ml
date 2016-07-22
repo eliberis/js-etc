@@ -34,7 +34,7 @@ let () =
                         ; Predicted.penny ~symbol:Symbol.PM ~margin:1
                         ; Predicted.penny ~symbol:Symbol.RSP ~margin:1
                         ; Predicted.penny ~symbol:Symbol.SO ~margin:1 *)
-                        ; Predicted.penny ~symbol:Symbol.XLP ~margin:1
+                        ; Predicted.penny ~symbol:Symbol.XLP ~margin:3
                         (*; Predicted.penny ~symbol:Symbol.XLU ~margin:1
                         ; Predicted.penny ~symbol:Symbol.XLY ~margin:1*)
                         ])
