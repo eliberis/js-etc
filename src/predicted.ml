@@ -3,7 +3,7 @@ open Async.Std
 open Message
 
 let limit = function
-    | _ -> 10
+    | _ -> 100
 ;;
 
 let initial_price sym =
